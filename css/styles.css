@@ -780,7 +780,24 @@ button { font-family:inherit; }
 .tracker2-grams button { grid-column:2; min-width:34px; min-height:20px; height:20px; padding:0; border:1px solid var(--accent); border-radius:6px; background:var(--card); color:var(--accent); line-height:1; cursor:pointer; }
 .tracker2-grams button:first-of-type { grid-row:1; }
 .tracker2-grams button:last-of-type { grid-row:2; }
-.tracker2-row > span { text-align:center; color:var(--text-dim); }
+.tracker2-row > span { text-align:center; color:var(--text); }
+:root[data-theme="light"] .tracker2-row > span, :root[data-theme="light"] .tracker2-row select { color:#172033; }
+:root[data-theme="dark"] .tracker2-row > span, :root[data-theme="dark"] .tracker2-row select { color:#ecf0f1; }
+@media (max-width:650px) {
+  #page-tracker2 .tracker2-macro-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+  #page-tracker2 .tracker2-macro-card { padding:8px 4px; }
+  #page-tracker2 .tracker2-macro-value { font-size:1rem; }
+  #page-tracker2 .tracker2-row { grid-template-columns:minmax(0,1fr) 96px 58px 42px !important; grid-template-areas:'food food food remove' 'grams gkg kcal remove' 'grams protein carbs remove' !important; gap:6px !important; padding:8px !important; font-size:.8rem; }
+  #page-tracker2 .tracker2-row select { grid-area:food; font-size:16px; }
+  #page-tracker2 .tracker2-grams { grid-area:grams; grid-template-columns:minmax(42px,1fr) 30px; }
+  #page-tracker2 .tracker2-grams input { min-height:36px; font-size:14px; }
+  #page-tracker2 .tracker2-grams button { min-width:30px; height:18px; min-height:18px; font-size:.85rem; }
+  #page-tracker2 .tracker2-row > span:nth-of-type(1) { grid-area:gkg; }
+  #page-tracker2 .tracker2-row > span:nth-of-type(2) { grid-area:kcal; }
+  #page-tracker2 .tracker2-row > span:nth-of-type(3) { grid-area:protein; }
+  #page-tracker2 .tracker2-row > span:nth-of-type(4) { grid-area:carbs; }
+  #page-tracker2 .tracker2-remove { grid-area:remove; }
+}
 .tracker2-remove { min-width:36px; min-height:36px; border:1px solid var(--red); border-radius:8px; background:transparent; color:var(--red); font-size:1.2rem; cursor:pointer; }
 .tracker2-add { width:100%; min-height:42px; padding:8px; border:0; border-top:1px dashed var(--border); background:transparent; color:var(--accent); cursor:pointer; }
 @media (max-width:900px) { .tracker2-row { grid-template-columns:minmax(150px,1fr) 118px 70px 64px 78px 78px 40px; gap:5px; font-size:.8rem; } }
