@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Diet Planner">
+<meta name="theme-color" content="#080810">
+<meta name="description" content="Piano alimentare personalizzato con calcolo automatico macro e generazione pasti">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+<title>New Project Diet — TEST</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="hamburger-menu">
+    <button class="hamburger-btn" type="button" aria-label="Apri menu di navigazione" aria-expanded="false" onclick="toggleHamburger()">&#9776;</button>
+    <div class="hamburger-dropdown" id="hamburger-dropdown">
+      <div class="hm-link active" data-page="home" onclick="navigateTo('home')">
+        <span class="hm-icon">&#127968;</span> Dashboard
+      </div>
+      <div class="hm-link" data-page="tracker" onclick="navigateTo('tracker')">
+        <span class="hm-icon">&#127860;</span> Tracker Manuale
+      </div>
+      <div class="hm-link" data-page="tracker2" onclick="navigateTo('tracker2')"><span class="hm-icon">&#128202;</span> Tracker Manuale 2</div>
+      <div class="hm-link" data-page="giornaliero" onclick="navigateTo('giornaliero')">
+        <span class="hm-icon">&#128203;</span> Piano Giornaliero
+      </div>
+      <div class="hm-link" data-page="scelte" onclick="navigateTo('scelte')"><span class="hm-icon">&#128202;</span> Piano a Scelte</div>
+      <div class="hm-link" data-page="settimanale" onclick="navigateTo('settimanale')">
+        <span class="hm-icon">&#128197;</span> Piano Settimanale
+      </div>
+      <div class="hm-link" data-page="alimenti" onclick="navigateTo('alimenti')">
+        <span class="hm-icon">&#128218;</span> Gestione Alimenti
+      </div>
+    </div>
+  </div>
+  <h1 style="flex:1;text-align:center;margin:0">New Project Diet</h1>
+  <div class="top-actions">
+    <button class="icon-btn" type="button" aria-label="Annulla ultima modifica" title="Annulla" onclick="undoLastChange()">&#8630;</button>
+    <button class="icon-btn" type="button" aria-label="Ripristina modifica" title="Ripristina" onclick="redoLastChange()">&#8631;</button>
+    <button class="icon-btn" type="button" aria-label="Cambia tema" title="Cambia tema" onclick="toggleTheme()" id="theme-toggle">&#9788;</button>
+  </div>
+</div>
+<p class="subtitle" id="page-subtitle">Dashboard</p>
+<div class="hm-overlay" id="hm-overlay" onclick="closeHamburger()"></div>
+
+
+<div id="page-home" class="page active">
+  <div class="dashboard-hero" id="home-hero">
+    <div>
+      <div class="dash-eyebrow">Oggi</div>
+      <h2 id="home-today-title">Dashboard Giornaliera</h2>
+      <p id="home-summary-text">Riepilogo rapido di target, tracker e piano.</p>
+    </div>
+    <div class="home-actions">
+      <button class="btn-generate" onclick="quickGenerateTodayPlan()">Genera oggi</button>
+      <button class="btn-refresh-all" onclick="navigateTo('tracker')">Apri tracker</button>
+      <button class="btn-export-pdf" onclick="exportAllData()">Backup</button>
+    </div>
+  </div>
+  <div id="home-dashboard-grid" class="home-dashboard-grid" aria-hidden="true"></div>
+  <div class="suggestion-section" id="home-profile-targets"></div>
+  <div class="suggestion-section">
+    <h2 id="home-quick-actions-title">Azioni rapide</h2>
+    <div class="quick-actions-grid">
+      <button onclick="quickAddTrackerFood()">+ Alimento rapido</button>
+      <button onclick="copyTrackerDay('work','test')">Copia Work in Test</button>
+      <button onclick="copyTrackerDay('rest','test')">Copia Rest in Test</button>
+      <button onclick="generateShoppingList()">Lista spesa</button>
+      <button onclick="renderTemplateManager();navigateTo('alimenti')">Template pasti</button>
+    </div>
+  </div>
+  <div class="suggestion-section">
+    <h2 id="home-auto-adjust-title">Auto Adjust Calorie</h2>
+    <p class="sub-desc">Inserisci il peso medio di 7 giorni fa e quello attuale: l'app suggerisce una correzione kcal coerente con l'obiettivo.</p>
+    <div class="profile-grid">
+      <div class="field-group"><label>Media 7 giorni precedente</label><div class="universal-stepper"><input type="number" inputmode="decimal" step="0.1" id="adj-prev-weight" placeholder="es. 86.5"><button type="button" class="universal-step" onclick="adjustNumberField('adj-prev-weight',-0.1,20,400)" aria-label="Diminuisci peso precedente">−</button><button type="button" class="universal-step" onclick="adjustNumberField('adj-prev-weight',0.1,20,400)" aria-label="Aumenta peso precedente">+</button></div></div>
+      <div class="field-group"><label>Media 7 giorni attuale</label><div class="universal-stepper"><input type="number" inputmode="decimal" step="0.1" id="adj-current-weight" placeholder="es. 86.0"><button type="button" class="universal-step" onclick="adjustNumberField('adj-current-weight',-0.1,20,400)" aria-label="Diminuisci peso attuale">−</button><button type="button" class="universal-step" onclick="adjustNumberField('adj-current-weight',0.1,20,400)" aria-label="Aumenta peso attuale">+</button></div></div>
+      <div class="field-group"><label>Target % peso / settimana</label><div class="universal-stepper"><input type="number" inputmode="decimal" step="0.1" id="adj-target-rate" placeholder="deficit -0.5, massa 0.25"><button type="button" class="universal-step" onclick="adjustNumberField('adj-target-rate',-0.1,-10,10)" aria-label="Riduci target percentuale">−</button><button type="button" class="universal-step" onclick="adjustNumberField('adj-target-rate',0.1,-10,10)" aria-label="Aumenta target percentuale">+</button></div></div>
+    </div>
+    <div class="btn-row" style="margin-top:12px"><button class="btn-generate" onclick="calculateAutoAdjust()">Calcola suggerimento</button><button class="btn-refresh-all" onclick="applyAutoAdjust()">Applica ultimo suggerimento</button></div>
+    <div id="auto-adjust-result" class="insight-box"></div>
+  </div>
+  <div class="suggestion-section">
+    <h2>Trend del peso</h2>
+    <p class="sub-desc">Registra il peso nel tempo: i dati restano solo su questo dispositivo.</p>
+    <div class="weight-entry-row">
+      <label class="sr-only" for="weight-entry-value">Peso in kg</label>
+      <div class="universal-stepper weight-stepper"><input id="weight-entry-value" type="number" inputmode="decimal" min="20" max="400" step="0.1" placeholder="Peso (kg)"><button type="button" class="universal-step" onclick="adjustNumberField('weight-entry-value',-0.1,20,400)" aria-label="Diminuisci peso">−</button><button type="button" class="universal-step" onclick="adjustNumberField('weight-entry-value',0.1,20,400)" aria-label="Aumenta peso">+</button></div>
+      <button class="btn-generate" type="button" onclick="addWeightEntry()">Registra peso</button>
+    </div>
+    <div id="weight-trend" class="weight-trend" role="img" aria-label="Grafico storico del peso"></div>
+  </div>
+  </div>
+</div>
+
+<!-- ==================== MANUAL TRACKER PAGE (HOME) ==================== -->
+<div id="page-tracker" class="page">
+
+  <div class="profile-card">
+    <h2>Il Tuo Profilo</h2>
+    <div class="profile-grid">
+      <div class="field-group">
+        <label>Sesso</label>
+        <select id="trk-prof-sesso" onchange="updateTrackerProfile()">
+          <option value="M">Maschio</option>
+          <option value="F">Femmina</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Eta (anni)</label>
+        <input type="number" id="trk-prof-eta" value="30" onchange="updateTrackerProfile()">
+      </div>
+      <div class="field-group">
+        <label>Altezza (cm)</label>
+        <input type="number" id="trk-prof-altezza" value="175" onchange="updateTrackerProfile()">
+      </div>
+      <div class="field-group">
+        <label>Peso (kg)</label>
+        <input type="number" id="trk-prof-peso" step="0.1" value="86.5" onchange="updateTrackerProfile()">
+      </div>
+      <div class="field-group">
+        <label>Attivita</label>
+        <select id="trk-prof-attivita" onchange="updateTrackerProfile()">
+          <option value="1.2">Sedentario (ufficio)</option>
+          <option value="1.375">Leggera (1-3x/sett)</option>
+          <option value="1.55" selected>Moderata (3-5x/sett)</option>
+          <option value="1.725">Intensa (6-7x/sett)</option>
+          <option value="1.9">Molto intensa (2x/giorno)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="tracker-profile-targets" class="suggestion-section"></div>
+  <div id="tracker-results-panel" class="results-panel"></div>
+
+  <div class="tracker-tabs" aria-hidden="true" style="display:none">
+    <button class="tracker-tab-btn work active" onclick="switchTrackerTab('work')">Work Day</button>
+    <button class="tracker-tab-btn rest" onclick="switchTrackerTab('rest')">Rest Day</button>
+    <button class="tracker-tab-btn test" onclick="switchTrackerTab('test')">Test Day</button>
+  </div>
+  <div id="tracker-actions" class="btn-row tracker-actions-visible">
+    <button class="btn-export-pdf" onclick="exportTrackerPDF()" style="font-size:0.8em;padding:8px 14px">&#128196; Esporta PDF</button>
+
+    <button class="btn-generate" onclick="saveActiveTrackerAsDayTemplate()">Salva Template File</button>
+    <button class="btn-refresh-all" onclick="openDayTemplateFilePicker()">Importa Template</button>
+    <button class="btn-refresh-all" onclick="copyActiveTrackerToDailyPlan()">Usa nel Piano Giornaliero</button>
+  </div>
+  <div id="tracker-work" class="tracker-content active"></div>
+  <div id="tracker-rest" class="tracker-content" aria-hidden="true" style="display:none"></div>
+  <div id="tracker-test" class="tracker-content" aria-hidden="true" style="display:none"></div>
+
+  <div class="legend" aria-hidden="true" style="display:none">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> >= 100%</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green-light)"></div> 90-99%</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> 70-89%</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> 50-69%</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red-dark)"></div> < 50%</div>
+  </div>
+</div>
+
+<!-- Sticky bottom totals bar (tracker) -->
+<div class="sticky-totals" id="sticky-totals-tracker" hidden>
+  <div class="sticky-totals-inner" id="sticky-totals-tracker-inner"></div>
+</div>
+
+<!-- ==================== TRACKER MANUALE 2 PAGE ==================== -->
+<div id="page-tracker2" class="page">
+  <div class="suggestion-section tracker2-shell">
+    <h2>Tracker Manuale 2</h2>
+    <p class="sub-desc">Inserisci alimenti e grammi per vedere quanti grammi di ogni alimento corrispondono per kg di peso corporeo.</p>
+    <div id="tracker2-profile-targets" class="tracker2-profile-targets"></div>
+    <div id="tracker2-content"></div>
+    <div class="sticky-totals tracker2-sticky" id="sticky-totals-tracker2"><div class="sticky-totals-inner" id="sticky-totals-tracker2-inner"></div></div>
+  </div>
+</div>
+
+<!-- ==================== PIANO GIORNALIERO PAGE ==================== -->
+<div id="page-giornaliero" class="page">
+
+  <div class="profile-card">
+    <h2>Il Tuo Profilo</h2>
+    <div class="profile-grid">
+      <div class="field-group">
+        <label>Sesso</label>
+        <select id="prof-sesso" onchange="updateProfile()">
+          <option value="M">Maschio</option>
+          <option value="F">Femmina</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Eta (anni)</label>
+        <div class="profile-stepper"><input type="number" id="prof-eta" value="30" min="1" max="120" onchange="updateProfile()"><button type="button" class="profile-step" onclick="adjustProfileField('prof-eta',-1)" aria-label="Diminuisci età">−</button><button type="button" class="profile-step" onclick="adjustProfileField('prof-eta',1)" aria-label="Aumenta età">+</button></div>
+      </div>
+      <div class="field-group">
+        <label>Altezza (cm)</label>
+        <div class="profile-stepper"><input type="number" id="prof-altezza" value="175" min="80" max="250" onchange="updateProfile()"><button type="button" class="profile-step" onclick="adjustProfileField('prof-altezza',-1)" aria-label="Diminuisci altezza">−</button><button type="button" class="profile-step" onclick="adjustProfileField('prof-altezza',1)" aria-label="Aumenta altezza">+</button></div>
+      </div>
+      <div class="field-group">
+        <label>Peso (kg)</label>
+        <div class="profile-stepper"><input type="number" id="prof-peso" inputmode="decimal" step="0.1" min="20" max="400" value="86.5" onchange="updateProfile()"><button type="button" class="profile-step" onclick="adjustProfileField('prof-peso',-0.1)" aria-label="Diminuisci peso di 0,1 kg">−</button><button type="button" class="profile-step" onclick="adjustProfileField('prof-peso',0.1)" aria-label="Aumenta peso di 0,1 kg">+</button></div>
+      </div>
+      <div class="field-group">
+        <label>Attivita</label>
+        <select id="prof-attivita" onchange="updateProfile()">
+          <option value="1.2">Sedentario (ufficio)</option>
+          <option value="1.375">Leggera (1-3x/sett)</option>
+          <option value="1.55" selected>Moderata (3-5x/sett)</option>
+          <option value="1.725">Intensa (6-7x/sett)</option>
+          <option value="1.9">Molto intensa (2x/giorno)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-panel" id="results-panel">
+  </div>
+
+  <div class="suggestion-section" id="suggestion-section">
+    <h2>Piano Pasti Giornaliero</h2>
+    <p class="sub-desc">Generato automaticamente dal database alimenti e dai target calcolati</p>
+    <div style="margin:12px 0;padding:12px;background:var(--card2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span style="font-size:0.85em;color:var(--text-dim)">Tipo giornata:</span>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9em">
+        <input type="radio" name="daytype" value="ON" id="daytype-on" checked onchange="updateDayType()">
+        <span style="color:#2ecc71;font-weight:bold">ON</span> (giorno allenamento)
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9em">
+        <input type="radio" name="daytype" value="OFF" id="daytype-off" onchange="updateDayType()">
+        <span style="color:#e74c3c;font-weight:bold">OFF</span> (giorno riposo)
+      </label>
+      <span id="daytype-info" style="font-size:0.7em;color:var(--text-dim);margin-left:auto"></span>
+    </div>
+    <div class="btn-row daily-actions">
+      <button class="daily-btn daily-primary" onclick="generateMealPlan()">Genera Piano Pasti</button>
+      <button class="daily-btn daily-secondary" onclick="refreshFullPlan()" id="btn-refresh-all" style="display:none">&#8635; Rigenera Piano</button>
+      <button class="daily-btn daily-info" onclick="exportPlanPDF()" id="btn-export-pdf" style="display:none">&#128196; Esporta PDF</button>
+      <button class="daily-btn daily-sync" onclick="copyDailyPlanToTracker()" id="btn-copy-to-tracker" style="display:none">Copia nel Tracker</button>
+      <button class="daily-btn daily-save" onclick="saveCurrentPlanAsDayTemplate()" id="btn-save-day-template" style="display:none">Salva Template Giorno</button>
+      <button class="daily-btn daily-danger" onclick="clearMealPlan()" id="btn-clear-plan" style="display:none">&#10006; Elimina Piano</button>
+    </div>
+    <div class="template-file-tools"><button type="button" class="daily-btn daily-secondary" onclick="openDayTemplateFilePicker()">Carica template da file</button><input type="file" id="day-template-file-input" accept="application/json" hidden onchange="importDayTemplateFile(event)"><span>Un template salvato può essere caricato nel piano, nel tracker o nel piano settimanale.</span></div>
+    <div id="suggested-meals"></div>
+  </div>
+
+</div>
+
+<!-- ==================== PIANO A SCELTE PAGE ==================== -->
+<div id="page-scelte" class="page">
+  <div class="suggestion-section choice-plans-shell">
+    <div class="choice-plans-header"><div><h2>Piano alimentare a scelte</h2><p class="sub-desc">Scegli una sola alternativa per ogni gruppo. Le alternative composte sommano tutti i loro ingredienti.</p></div><div class="choice-actions"><button class="btn-generate" type="button" onclick="ChoicePlans.copyToDaily()">Usa nel Piano Giornaliero</button><button class="btn-export-pdf" type="button" onclick="ChoicePlans.copyToWeekly()">Usa nel Settimanale</button></div></div>
+    <div class="choice-preferences"><label>Escludi allergeni <input id="choice-allergens" type="text" placeholder="es. glutine, latte"></label><label><input id="choice-vegetarian" type="checkbox"> Vegetariano</label><label><input id="choice-vegan" type="checkbox"> Vegano</label><button type="button" class="btn-refresh-all" onclick="ChoicePlans.updatePreferences()">Applica filtri</button></div>
+    <div id="choice-plan-status" class="choice-plan-status"></div>
+    <div id="choice-plan-content"></div>
+  </div>
+</div>
+
+<!-- ==================== PIANO SETTIMANALE PAGE ==================== -->
+<div id="page-settimanale" class="page">
+
+  <div class="profile-card" style="padding:16px">
+    <h2 style="font-size:1em;margin-bottom:8px">Impostazioni Profilo</h2>
+    <div id="weekly-profile-summary" style="font-size:0.85em;color:var(--text-dim)"></div>
+    <div style="font-size:0.7em;color:var(--text-dim);margin-top:6px">
+      Modifica il profilo dal <a href="#" onclick="navigateTo('giornaliero');return false" style="color:var(--accent)">Piano Giornaliero</a>
+    </div>
+  </div>
+
+  <div class="suggestion-section" style="margin-top:12px">
+    <h2>Piano Pasti Settimanale</h2>
+    <p class="sub-desc">Genera 7 piani giornalieri diversi. Puoi anche recuperare una giornata dal Piano Giornaliero o dal Tracker Manuale usando i pulsanti nella testata del giorno.</p>
+    <div style="margin:12px 0;padding:14px;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
+      <div style="font-size:0.8em;color:var(--text-dim);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Calendario Allenamenti</div>
+      <div id="weekly-calendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center"></div>
+    </div>
+    <div id="weekly-freq-dashboard" style="display:none;margin:12px 0;padding:14px;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
+      <div style="font-size:0.8em;color:var(--text-dim);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Frequenze Settimanali</div>
+      <div id="weekly-freq-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-generate" onclick="generateWeeklyPlan()">Genera Piano Settimanale</button>
+      <button class="btn-refresh-all" onclick="refreshWeeklyPlan()" id="btn-refresh-weekly" style="display:none">&#8635; Rigenera Settimana</button>
+      <button class="btn-export-pdf" onclick="exportWeeklyPDF()" id="btn-export-weekly-pdf" style="display:none">Esporta PDF Settimana</button>
+      <button class="btn-export-pdf" onclick="generateShoppingList()" id="btn-shopping-list">Lista Spesa</button>
+    </div>
+    <div id="shopping-list-panel" class="shopping-list-panel" style="display:none"></div>
+    <div id="weekly-meals"></div>
+  </div>
+
+</div>
+
+<!-- ==================== GESTIONE ALIMENTI PAGE ==================== -->
+<div id="page-alimenti" class="page">
+  <div class="suggestion-section">
+    <h2>Gestione Database Alimenti</h2>
+    <p class="sub-desc">Aggiungi, modifica o rimuovi alimenti dal database</p>
+    <div class="db-toolbar">
+      <input type="text" class="db-search" id="db-search" placeholder="Cerca alimento..." oninput="renderFoodDB()">
+      <span class="db-count" id="db-count"></span>
+      <button class="btn-add-food" onclick="openFoodForm()">+ Nuovo Alimento</button>
+      <button class="btn-export-pdf" onclick="exportAllData()">Esporta Backup</button>
+      <button class="btn-refresh-all" onclick="document.getElementById('backup-file-input').click()">Importa Backup</button>
+      <input type="file" id="backup-file-input" accept="application/json" style="display:none" onchange="importAllData(event)">
+    </div>
+    <div id="template-manager" class="template-manager"></div>
+    <div class="db-table-wrap">
+      <table class="db-table">
+        <thead><tr>
+          <th>Alimento</th><th>Kcal</th><th>Carbo</th><th>Prot</th><th>Grassi</th><th>Fibre</th><th></th>Pref</th><th>Azioni</th>
+        </tr></thead>
+        <tbody id="db-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Food form modal -->
+<div class="db-form-overlay" id="food-form-overlay">
+  <div class="db-form">
+    <h3 id="food-form-title">Nuovo Alimento</h3>
+    <div class="field-group"><label>Nome</label><input type="text" id="ff-name"></div>
+    <div class="field-group"><label>Kcal (per 100g)</label><div class="universal-stepper"><input type="number" id="ff-kcal" inputmode="decimal" min="0" step="0.1"><button type="button" class="universal-step" onclick="adjustNumberField('ff-kcal',0.1,0,5000)" aria-label="Aumenta kcal">+</button><button type="button" class="universal-step" onclick="adjustNumberField('ff-kcal',-0.1,0,5000)" aria-label="Diminuisci kcal">−</button></div></div>
+    <div class="field-group"><label>Carboidrati (per 100g)</label><div class="universal-stepper"><input type="number" id="ff-carbo" inputmode="decimal" min="0" step="0.1"><button type="button" class="universal-step" onclick="adjustNumberField('ff-carbo',0.1,0,100)" aria-label="Aumenta carboidrati">+</button><button type="button" class="universal-step" onclick="adjustNumberField('ff-carbo',-0.1,0,100)" aria-label="Diminuisci carboidrati">−</button></div></div>
+    <div class="field-group"><label>Proteine (per 100g)</label><div class="universal-stepper"><input type="number" id="ff-prot" inputmode="decimal" min="0" step="0.1"><button type="button" class="universal-step" onclick="adjustNumberField('ff-prot',0.1,0,100)" aria-label="Aumenta proteine">+</button><button type="button" class="universal-step" onclick="adjustNumberField('ff-prot',-0.1,0,100)" aria-label="Diminuisci proteine">−</button></div></div>
+    <div class="field-group"><label>Grassi (per 100g)</label><div class="universal-stepper"><input type="number" id="ff-grassi" inputmode="decimal" min="0" step="0.1"><button type="button" class="universal-step" onclick="adjustNumberField('ff-grassi',0.1,0,100)" aria-label="Aumenta grassi">+</button><button type="button" class="universal-step" onclick="adjustNumberField('ff-grassi',-0.1,0,100)" aria-label="Diminuisci grassi">−</button></div></div>
+    <div class="field-group"><label>Fibre (per 100g)</label><div class="universal-stepper"><input type="number" id="ff-fibre" inputmode="decimal" min="0" step="0.1"><button type="button" class="universal-step" onclick="adjustNumberField('ff-fibre',0.1,0,100)" aria-label="Aumenta fibre">+</button><button type="button" class="universal-step" onclick="adjustNumberField('ff-fibre',-0.1,0,100)" aria-label="Diminuisci fibre">−</button></div></div>
+    <div class="db-pref-toggle"><input type="checkbox" id="ff-pref"><label for="ff-pref">Alimento preferito</label></div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeFoodForm()">Annulla</button>
+      <button class="btn-save" onclick="saveFoodForm()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- Refresh popup modal -->
+<div class="modal-overlay" id="refresh-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeRefreshModal()">&times;</button>
+    <div class="modal-emoji">&#127837;</div>
+    <div class="modal-text">Qualcosa per&ograve; devi pure mangiarlo!</div>
+  </div>
+</div>
+
+<!-- Info popup -->
+<div class="info-popup-overlay" id="info-overlay" onclick="closeInfo()"></div>
+<div class="info-popup" id="info-popup">
+  <button class="info-close" onclick="closeInfo()">&times;</button>
+  <h3 id="info-title"></h3>
+  <p id="info-body"></p>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- Sticky bottom totals bar (giornaliero) -->
+<div class="sticky-totals" id="sticky-totals">
+  <div class="sticky-totals-inner" id="sticky-totals-inner"></div>
+</div>
+
+<nav id="mobile-bottom-nav" class="mobile-bottom-nav" aria-label="Navigazione principale mobile">
+  <button type="button" data-page="home" aria-label="Dashboard"><span>⌂</span><small>Dashboard</small></button>
+  <button type="button" data-page="tracker" aria-label="Tracker 1"><span>◉</span><small>Tracker 1</small></button>
+  <button type="button" data-page="tracker2" aria-label="Tracker 2"><span>◈</span><small>Tracker 2</small></button>
+  <button type="button" data-page="alimenti" aria-label="Gestione alimenti"><span>▦</span><small>Alimenti</small></button>
+</nav>
+
+<div class="footer">
+  New Project Diet | Dati salvati in localStorage | Nessun server richiesto
+</div>
+
+<script src="js/foods-db.js"></script>
+<script src="js/app.js"></script>
+<script src="js/choice-plans.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
