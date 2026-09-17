@@ -1,4 +1,4 @@
-const CACHE_NAME = 'diet-planner-v5-8096';
+const CACHE_NAME = 'diet-planner-v5-8097';
 const ASSETS = [
   './',
   './index.html',

@@ -801,7 +801,28 @@ button { font-family:inherit; }
 .tracker2-remove { min-width:36px; min-height:36px; border:1px solid var(--red); border-radius:8px; background:transparent; color:var(--red); font-size:1.2rem; cursor:pointer; }
 .tracker2-add { width:100%; min-height:42px; padding:8px; border:0; border-top:1px dashed var(--border); background:transparent; color:var(--accent); cursor:pointer; }
 @media (max-width:900px) { .tracker2-row { grid-template-columns:minmax(150px,1fr) 118px 70px 64px 78px 78px 40px; gap:5px; font-size:.8rem; } }
-@media (max-width:650px) { .tracker2-profile-line { flex-direction:column; } .tracker2-row { grid-template-columns:1fr 110px 50px 62px 62px 38px; grid-template-areas:'food grams gkg remove' 'food grams kcal protein carbs'; gap:6px; } .tracker2-row select { grid-area:food; } .tracker2-grams { grid-area:grams; } .tracker2-row > span:nth-of-type(1) { grid-area:gkg; } .tracker2-row > span:nth-of-type(2) { grid-area:kcal; } .tracker2-row > span:nth-of-type(3) { grid-area:protein; } .tracker2-row > span:nth-of-type(4) { grid-area:carbs; } .tracker2-remove { grid-area:remove; } }
+@media (max-width:650px) {
+  .tracker2-profile-line { flex-direction:column; }
+  .tracker2-row { grid-template-columns:minmax(0,1fr) 96px 58px 42px !important; grid-template-areas:'food food food remove' 'grams gkg kcal remove' 'grams protein carbs remove' !important; gap:6px !important; padding:8px !important; }
+  .tracker2-row select { grid-area:food; width:80%; justify-self:start; }
+  .tracker2-grams { grid-area:grams; grid-template-columns:minmax(42px,1fr) 30px; }
+  .tracker2-grams input { min-height:36px; font-size:14px; }
+  .tracker2-grams button { min-width:30px; height:18px; min-height:18px; font-size:.85rem; }
+  .tracker2-row > span:nth-of-type(1) { grid-area:gkg; }
+  .tracker2-row > span:nth-of-type(2) { grid-area:kcal; }
+  .tracker2-row > span:nth-of-type(3) { grid-area:protein; }
+  .tracker2-row > span:nth-of-type(4) { grid-area:carbs; }
+  .tracker2-remove { grid-area:remove; }
+}
+@media (max-width:700px) {
+  .sticky-totals, .tracker2-sticky { bottom:calc(72px + env(safe-area-inset-bottom)); }
+  #page-tracker2 .tracker2-macro-grid { gap:6px; }
+  #page-tracker2 .tracker2-macro-card { padding:8px 4px; }
+  #page-tracker2 .tracker2-macro-value { font-size:1rem; }
+  #page-tracker2 .tracker2-profile-targets .results-grid { gap:8px; }
+  #page-tracker2 .tracker2-profile-targets .result-item { padding:10px; }
+  #page-tracker2 .tracker2-profile-targets .result-item .r-value { font-size:1.35rem !important; }
+}
 #page-tracker > #tracker-profile-targets, #page-tracker > #tracker-results-panel, #page-tracker > #tracker-work { max-width:1100px !important; margin-left:auto !important; margin-right:auto !important; }
 #page-tracker > #tracker-results-panel > .results-grid { grid-template-columns:repeat(3,minmax(180px,1fr)); }
 #page-tracker #tracker-results-panel { display:flex; flex-direction:column; gap:12px; }
